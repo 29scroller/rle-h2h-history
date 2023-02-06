@@ -1,0 +1,81 @@
+{
+    "matches": [
+        {
+            "_id": "60431501a09e7fba40d299d4",
+            "octane_id": "3530103",
+            "event": {
+                "_id": "5f35882d53fbbb5894b43145",
+                "name": "Fusion Europe 3v3",
+                "tier": "B"
+            },
+            "date": "2020-06-03T19:00:00Z",
+            "blue": {
+                "score": 4,
+                "winner": true,
+                "team": {
+                    "team": {
+                        "_id": "6020bd98f1e4807cc700dc33",
+                        "slug": "dc33-oxygen-esports",
+                        "name": "Oxygen Esports"
+                    }
+                },
+                "players": [
+                    {
+                        "player": {
+                            "_id": "5f3d8fdd95f40596eae23dca",
+                            "slug": "3dca-ferra",
+                            "tag": "Ferra"
+                        }
+                    },
+                    {
+                        "player": {
+                            "_id": "5f3d8fdd95f40596eae23dc9",
+                            "slug": "3dc9-chausette45",
+                            "tag": "Chausette45"
+                        }
+                    },
+                    {
+                        "player": {
+                            "_id": "5f3d8fdd95f40596eae23f83",
+                            "slug": "3f83-aztral",
+                            "tag": "AztraL"
+                        }
+                    }
+                ]
+            },
+            "orange": {
+                "score": 1,
+                "team": {
+                    "team": {
+                        "_id": "6020bd99f1e4807cc700dc8d",
+                        "slug": "dc8d-stormtroopers",
+                        "name": "Stormtroopers"
+                    }
+                },
+                "players": [
+                    {
+                        "player": {
+                            "_id": "5f3d8fdd95f40596eae2403c",
+                            "slug": "403c-dead",
+                            "tag": "dead."
+                        }
+                    },
+                    {
+                        "player": {
+                            "_id": "5f3d8fdd95f40596eae24161",
+                            "slug": "4161-apparentlyjack",
+                            "tag": "ApparentlyJack"
+                        }
+                    },
+                    {
+                        "player": {
+                            "_id": "5f3d8fdd95f40596eae23fb8",
+                            "slug": "3fb8-polar",
+                            "tag": "Polar"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
