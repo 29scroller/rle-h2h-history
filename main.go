@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	var teamFound bool
+	/* var teamFound bool
 	var firstTeamInfo, secondTeamInfo headtohead_history.Team
 
 	for !teamFound {
@@ -20,20 +20,65 @@ func main() {
 		secondTeamInfo, teamFound = headtohead_history.UserEnteringTeam("second")
 	}
 	fmt.Printf("Finding active players of %s by ID\n", secondTeamInfo.Name)
-	secondTeamPlayers := headtohead_history.FindActivePlayersByTeamID(secondTeamInfo.Id)
+	secondTeamPlayers := headtohead_history.FindActivePlayersByTeamID(secondTeamInfo.Id) */
 
-	fmt.Println("Checking all players for updates...")
-	for i := 0; i < len(firstTeamPlayers); i++ {
-		headtohead_history.CheckPlayerForNewMatches(firstTeamPlayers[i])
+	var choseInput, choseTeams bool
+	var firstTeamInfo, secondTeamInfo headtohead_history.Team
+	var firstTeamPlayers, secondTeamPlayers []headtohead_history.Player
+	for !choseInput {
+		userInput := headtohead_history.UserChoosingInput()
+		switch userInput {
+		case 1:
+			firstTeamInfo, secondTeamInfo = headtohead_history.UserEnteringTeams()
+			choseInput = true
+			fmt.Printf("Finding active players of %s\n", firstTeamInfo.Name)
+			firstTeamPlayers = headtohead_history.FindActivePlayersByTeamID(firstTeamInfo.Id)
+			fmt.Printf("Finding active players of %s\n", secondTeamInfo.Name)
+			secondTeamPlayers = headtohead_history.FindActivePlayersByTeamID(secondTeamInfo.Id)
+		case 2:
+			firstTeamPlayers, secondTeamPlayers = headtohead_history.UserEnteringAllPlayers()
+			choseInput = true
+		default:
+			fmt.Println("Need either 1 or 2 to continue")
+		}
 	}
-	for i := 0; i < len(secondTeamPlayers); i++ {
-		headtohead_history.CheckPlayerForNewMatches(secondTeamPlayers[i])
+
+	choseInput = false
+	for !choseInput {
+		userInput := headtohead_history.UserChoosingWhetherToCheckPlayers()
+		switch userInput {
+		case 1:
+			fmt.Println("Checking all players for updates...")
+			for i := 0; i < len(firstTeamPlayers); i++ {
+				headtohead_history.CheckIfPlayerHasFile(firstTeamPlayers[i])
+				headtohead_history.CheckPlayerForNewMatches(firstTeamPlayers[i])
+			}
+			for i := 0; i < len(secondTeamPlayers); i++ {
+				headtohead_history.CheckIfPlayerHasFile(firstTeamPlayers[i])
+				headtohead_history.CheckPlayerForNewMatches(secondTeamPlayers[i])
+			}
+			choseInput = true
+		case 0:
+			fmt.Println("Got it, won't check")
+			choseInput = true
+		default:
+			fmt.Println("Need either 1 or 0 to continue")
+		}
 	}
+
+	fmt.Println("Checking if all players have files...")
+	headtohead_history.CheckIfTeamPlayersHaveFiles(firstTeamPlayers)
+	headtohead_history.CheckIfTeamPlayersHaveFiles(secondTeamPlayers)
 
 	fmt.Println("Reading data from players' files...")
 	var firstTeamMatches, secondTeamMatches []headtohead_history.Match
 	headtohead_history.LoadAndAppendTeamMatchesFromFiles(&firstTeamMatches, firstTeamPlayers, firstTeamInfo.Name)
 	headtohead_history.LoadAndAppendTeamMatchesFromFiles(&secondTeamMatches, secondTeamPlayers, secondTeamInfo.Name)
+
+	if !choseTeams {
+		firstTeamInfo.Name = "Team 1"
+		secondTeamInfo.Name = "Team 2"
+	}
 
 	fmt.Println("Deleting duplicates...")
 	firstTeamMatches = headtohead_history.RemoveDuplicatesinMatches(firstTeamMatches, firstTeamInfo.Name)

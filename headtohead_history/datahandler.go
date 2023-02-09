@@ -138,21 +138,6 @@ func BiggestOfFileAndJsonForPlayer(player Player) (biggestSlice []byte, hasChang
 	*/
 }
 
-/*
-	 func FindDifferenceInMatchBatches(oldMatches, newMatches []Match) (difference []Match) {
-		inResult := make(map[string]void, len(newMatches))
-		for _, match := range oldMatches {
-			inResult[match.Id] = void{}
-		}
-		for _, match := range newMatches {
-			if _, ok := inResult[match.Id]; !ok {
-				difference = append(difference, match)
-			}
-		}
-		fmt.Printf("Found %d new matches\n", len(difference))
-		return
-	}
-*/
 func AppendMatchesOfPlayerToFile(player Player, newData []byte) {
 	f, err := os.OpenFile("C:\\Users\\29scroller\\go\\rle-h2h-history\\matches_of_players\\"+player.Slug+".txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -182,6 +167,28 @@ func LoadPlayerMatchesFromFile(player Player) (matchesOnly []Match) {
 	return
 }
 
+func DoesPlayerFileExist(player Player) bool {
+	_, error := os.Stat("C:\\Users\\29scroller\\go\\rle-h2h-history\\matches_of_players\\" + player.Slug + ".txt")
+	if os.IsNotExist(error) {
+		return false
+	} else {
+		return true
+	}
+}
+
+func CheckIfPlayerHasFile(player Player) {
+	var rawData []byte
+	if !DoesPlayerFileExist(player) {
+		WriteMatchesOfPlayerToFile(player, rawData)
+	}
+}
+
+func CheckIfTeamPlayersHaveFiles(players []Player) {
+	for i := 0; i < len(players); i++ {
+		CheckIfPlayerHasFile(players[i])
+	}
+}
+
 func FileToByteSlice(player Player) (rawData []byte) {
 	rawData, err := os.ReadFile("C:\\Users\\29scroller\\go\\rle-h2h-history\\matches_of_players\\" + player.Slug + ".txt")
 	if err != nil {
@@ -198,6 +205,18 @@ func UnmarshalObject[T any](body []byte, object T) {
 	}
 }
 
+func UserEnteringTeams() (firstTeamInfo, secondTeamInfo Team) {
+	teamFound := false
+	for !teamFound {
+		firstTeamInfo, teamFound = UserEnteringTeam("first")
+	}
+	teamFound = false
+	for !teamFound {
+		secondTeamInfo, teamFound = UserEnteringTeam("second")
+	}
+	return
+}
+
 // UserEnteringTeam handles dialogue with user for entering team name.
 func UserEnteringTeam(numberAdj string) (teamInfo Team, teamFound bool) {
 	fmt.Println("Write", numberAdj, "team's name")
@@ -209,6 +228,56 @@ func UserEnteringTeam(numberAdj string) (teamInfo Team, teamFound bool) {
 	}
 	fmt.Println("Finding info of", teamName)
 	teamInfo, teamFound = FindTeamByName(teamName)
-	fmt.Printf("Found team = %t, team ID is %s \n", teamFound, teamInfo.Id)
+	fmt.Printf("Found team = %t, \n", teamFound)
+	return
+}
+
+func UserEnteringAllPlayers() (firstTeamPlayers, secondTeamPlayers []Player) {
+	firstTeamPlayers = UserEnteringPlayersOfTeam("first")
+	secondTeamPlayers = UserEnteringPlayersOfTeam("second")
+	return
+}
+
+func UserEnteringPlayersOfTeam(numberAdj string) (teamPlayers []Player) {
+	teamPlayers = make([]Player, 3)
+	fmt.Println("Write", numberAdj, "team's players")
+	playerfound := false
+	for !playerfound {
+		teamPlayers[0], playerfound = UserEnteringPlayer("first")
+	}
+	playerfound = false
+	for !playerfound {
+		teamPlayers[1], playerfound = UserEnteringPlayer("second")
+	}
+	playerfound = false
+	for !playerfound {
+		teamPlayers[2], playerfound = UserEnteringPlayer("third")
+	}
+	return
+}
+
+func UserEnteringPlayer(numberAdj string) (playerInfo Player, playerfound bool) {
+	fmt.Println("Write", numberAdj, "player's tag")
+	reader := bufio.NewReader(os.Stdin)
+	var err error
+	playerTag, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Finding info of", playerTag)
+	playerInfo, playerfound = FindPlayerByTag(playerTag)
+	fmt.Printf("Found team = %t, \n", playerfound)
+	return
+}
+
+func UserChoosingInput() (userInput int) {
+	fmt.Println("Do you want to input teams or distinct players? Type 1 for teams or 2 for players")
+	fmt.Scanln(&userInput)
+	return
+}
+
+func UserChoosingWhetherToCheckPlayers() (userInput int) {
+	fmt.Println("Do you want to check players' files for updates? Type 1 to check or 0 to not check")
+	fmt.Scanln(&userInput)
 	return
 }

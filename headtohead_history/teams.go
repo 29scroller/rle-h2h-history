@@ -6,7 +6,6 @@ import (
 )
 
 // FindTeamByName finds team in zsr.octane.gg by its name.
-// Suggestion: enable confirmation of a team in case of single finding (to avoid picking wrong team by accident)
 func FindTeamByName(teamName string) (Team, bool) {
 	//Writing team name in lowercase, replacing space with %20, trimming whitespace
 	teamName = strings.TrimSpace(strings.ToLower(strings.Replace(teamName, " ", "%20", 1)))
@@ -37,7 +36,14 @@ func FindTeamByName(teamName string) (Team, bool) {
 			return teamInfo.Teams[res-1], true
 		}
 	} else {
-		return teamInfo.Teams[0], true
+		fmt.Printf("Found team %s; confirm it's the right team by typing 1 or type something else to search different team\n", teamInfo.Teams[0].Name)
+		var res int
+		fmt.Scanln(&res)
+		if res == 1 {
+			return teamInfo.Teams[0], true
+		} else {
+			return Team{}, false
+		}
 	}
 }
 

@@ -11,7 +11,6 @@ This project is using zsr.octane.gg API to load data of certain players, teams a
 It is very early in the making, for now it can calculate the rating of past matchups of two existing teams based on data until February 2nd, 2023. I plan to add much more functionality in the future.
 
 Future plans:
-  - Automate adding data of new players and recent matches
   - Unify paths to files!!! (it refers to my own file system)
   - Personalise input - provide a choice between whether to compare players or teams
   - Detail output - group matches by completeness of rosters, sort by date
