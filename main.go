@@ -2,27 +2,35 @@ package main
 
 import (
 	"fmt"
-	"headtohead_history"
+	"rle-h2h-history/headtohead_history"
 )
 
 func main() {
 	var teamFound bool
-	var firstTeamName, secondTeamName string
 	var firstTeamInfo, secondTeamInfo headtohead_history.Team
 
 	for !teamFound {
-		firstTeamInfo, teamFound = headtohead_history.UserEnteringTeam("first", firstTeamName)
+		firstTeamInfo, teamFound = headtohead_history.UserEnteringTeam("first")
 	}
 	fmt.Printf("Finding active players of %s by ID\n", firstTeamInfo.Name)
 	firstTeamPlayers := headtohead_history.FindActivePlayersByTeamID(firstTeamInfo.Id)
 
 	teamFound = false
 	for !teamFound {
-		secondTeamInfo, teamFound = headtohead_history.UserEnteringTeam("second", secondTeamName)
+		secondTeamInfo, teamFound = headtohead_history.UserEnteringTeam("second")
 	}
 	fmt.Printf("Finding active players of %s by ID\n", secondTeamInfo.Name)
 	secondTeamPlayers := headtohead_history.FindActivePlayersByTeamID(secondTeamInfo.Id)
 
+	fmt.Println("Checking all players for updates...")
+	for i := 0; i < len(firstTeamPlayers); i++ {
+		headtohead_history.CheckPlayerForNewMatches(firstTeamPlayers[i])
+	}
+	for i := 0; i < len(secondTeamPlayers); i++ {
+		headtohead_history.CheckPlayerForNewMatches(secondTeamPlayers[i])
+	}
+
+	fmt.Println("Reading data from players' files...")
 	var firstTeamMatches, secondTeamMatches []headtohead_history.Match
 	headtohead_history.LoadAndAppendTeamMatchesFromFiles(&firstTeamMatches, firstTeamPlayers, firstTeamInfo.Name)
 	headtohead_history.LoadAndAppendTeamMatchesFromFiles(&secondTeamMatches, secondTeamPlayers, secondTeamInfo.Name)

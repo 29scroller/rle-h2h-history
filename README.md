@@ -12,6 +12,7 @@ It is very early in the making, for now it can calculate the rating of past matc
 
 Future plans:
   - Automate adding data of new players and recent matches
+  - Unify paths to files!!! (it refers to my own file system)
   - Personalise input - provide a choice between whether to compare players or teams
   - Detail output - group matches by completeness of rosters, sort by date
   - Give out match predictions based on output

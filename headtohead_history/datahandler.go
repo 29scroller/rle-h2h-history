@@ -78,12 +78,36 @@ func UrlToByteSlice(url string) (rawData []byte) {
 }
 
 // WriteMatchesOfPlayerToFile writes all found matches of player to file named as player's slug
-func WriteMatchesOfPlayerToFile(player Player) {
-	f, err := os.Create("C:\\Users\\29scroller\\Downloads\\TEAMVSTEAM\\matches_of_players\\" + player.Slug + ".txt")
+func WriteMatchesOfPlayerToFile(player Player, rawData []byte) {
+	f, err := os.Create("C:\\Users\\29scroller\\go\\rle-h2h-history\\matches_of_players\\" + player.Slug + ".txt")
 	if err != nil {
 		fmt.Println("Could not create file :(")
 		panic(err)
 	}
+	if len(rawData) == 0 {
+		rawData = CollectMatchesInString(player)
+	}
+	WriteByteSliceToPlayerFile(*f, player, rawData)
+	fmt.Printf("Wrote info to file %s.txt\n", player.Slug)
+}
+
+func WriteByteSliceToPlayerFile(file os.File, player Player, rawData []byte) {
+	file.Write(rawData)
+	file.Close()
+	fmt.Printf("Wrote info of %s to file %s.txt\n", player.Tag, player.Slug)
+}
+
+func CheckPlayerForNewMatches(player Player) {
+	data, sliceChanged := BiggestOfFileAndJsonForPlayer(player)
+	if sliceChanged {
+		WriteMatchesOfPlayerToFile(player, data)
+		fmt.Printf("Wrote updated info in player's file, %s.txt\n", player.Slug)
+	} else {
+		fmt.Printf("No changes in data for %s\n", player.Tag)
+	}
+}
+
+func CollectMatchesInString(player Player) (totalData []byte) {
 	page := 1
 	for {
 		url := "https://zsr.octane.gg/matches?mode=3&page=" + fmt.Sprint(page) + "&player=" + player.Id
@@ -91,34 +115,79 @@ func WriteMatchesOfPlayerToFile(player Player) {
 		rawData = []byte(strings.TrimSpace(string(rawData)))
 		endString := `{"matches":[],"page":` + fmt.Sprint(page) + `,"perPage":100,"pageSize":0}`
 		if string(rawData) == endString {
-			f.Close()
-			break
+			return totalData
 		}
-		f.Write(rawData)
-		f.WriteString("\n")
-		fmt.Printf("Wrote page %d of player %s \n", page, player.Slug)
+		totalData = append(totalData, rawData...)
+		totalData = append(totalData, "\n"...)
+		fmt.Printf("Read page %d of player %s \n", page, player.Slug)
 		page += 1
 	}
-	fmt.Println("Wrote info to file", player.Slug)
+}
+
+func BiggestOfFileAndJsonForPlayer(player Player) (biggestSlice []byte, hasChanged bool) {
+	oldData := FileToByteSlice(player)
+	newData := CollectMatchesInString(player)
+	if len(newData) > len(oldData) {
+		return newData, true
+	} else {
+		return oldData, false
+	}
+	/* 	UnmarshalObject(oldData, &oldMatches)
+	   	UnmarshalObject(newData, &newMatches)
+	   	areSame = reflect.DeepEqual(oldData, newData)
+	*/
+}
+
+/*
+	 func FindDifferenceInMatchBatches(oldMatches, newMatches []Match) (difference []Match) {
+		inResult := make(map[string]void, len(newMatches))
+		for _, match := range oldMatches {
+			inResult[match.Id] = void{}
+		}
+		for _, match := range newMatches {
+			if _, ok := inResult[match.Id]; !ok {
+				difference = append(difference, match)
+			}
+		}
+		fmt.Printf("Found %d new matches\n", len(difference))
+		return
+	}
+*/
+func AppendMatchesOfPlayerToFile(player Player, newData []byte) {
+	f, err := os.OpenFile("C:\\Users\\29scroller\\go\\rle-h2h-history\\matches_of_players\\"+player.Slug+".txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Println("Could not create file :(")
+		panic(err)
+	}
+	defer f.Close()
+	_, err2 := f.WriteString(string(newData))
+	if err2 != nil {
+		fmt.Printf("Could not write new data to file %s.txt\n", player.Slug)
+	} else {
+		fmt.Printf("New data has been written to %s.txt\n", player.Slug)
+	}
 }
 
 // LoadPlayerMatchesFromFile loads info wrote by WriteMatchesOfPlayerToFile from file associated with player's slug
-func LoadPlayerMatchesFromFile(player Player) []Match {
-	rawData, err := os.ReadFile("C:\\Users\\29scroller\\Downloads\\TEAMVSTEAM\\matches_of_players\\" + player.Slug + ".txt")
-	if err != nil {
-		panic(err)
-	}
-	stringRawData := strings.TrimSpace(string(rawData))
+func LoadPlayerMatchesFromFile(player Player) (matchesOnly []Match) {
+	stringRawData := strings.TrimSpace(string(FileToByteSlice(player)))
 	splitRawData := regexp.MustCompile("\r?\n").Split(stringRawData, -1)
 	playerMatches := make([]MultipleMatches, len(splitRawData))
-	var matchesOnly []Match
 	for i := 0; i < len(splitRawData); i++ {
 		tempByteSlice := []byte(splitRawData[i])
 		UnmarshalObject(tempByteSlice, &playerMatches[i])
 		matchesOnly = append(matchesOnly, playerMatches[i].Matches...)
 	}
 	fmt.Printf("Matches count of %s = %d\n", player.Tag, len(matchesOnly))
-	return matchesOnly
+	return
+}
+
+func FileToByteSlice(player Player) (rawData []byte) {
+	rawData, err := os.ReadFile("C:\\Users\\29scroller\\go\\rle-h2h-history\\matches_of_players\\" + player.Slug + ".txt")
+	if err != nil {
+		panic(err)
+	}
+	return
 }
 
 // UnmarshalObject unmarshals byte slice into any struct.
@@ -129,16 +198,16 @@ func UnmarshalObject[T any](body []byte, object T) {
 	}
 }
 
-//UserEnteringTeam handles dialogue with user for entering team name.
-func UserEnteringTeam(numberAdj, teamName string) (teamInfo Team, teamFound bool) {
+// UserEnteringTeam handles dialogue with user for entering team name.
+func UserEnteringTeam(numberAdj string) (teamInfo Team, teamFound bool) {
 	fmt.Println("Write", numberAdj, "team's name")
 	reader := bufio.NewReader(os.Stdin)
 	var err error
-	teamName, err = reader.ReadString('\n')
+	teamName, err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Finding ID of", teamName)
+	fmt.Println("Finding info of", teamName)
 	teamInfo, teamFound = FindTeamByName(teamName)
 	fmt.Printf("Found team = %t, team ID is %s \n", teamFound, teamInfo.Id)
 	return
