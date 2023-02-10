@@ -32,7 +32,7 @@ func ParseMatchInfo(matchId string) Match {
 
 // FindPlayersOfTeamInMatch searches for each player of a team in Blue and Orange sides of match.
 func CountPlayersOfTeamInMatch(team []Player, match Match) (blueCount, orangeCount uint8) {
-	for teamIndex := 0; teamIndex < 3; teamIndex++ {
+	for teamIndex := 0; teamIndex < len(team); teamIndex++ {
 		for blueIndex := 0; blueIndex < 3; blueIndex++ {
 			if match.Blue.PlayerUp[blueIndex].Player.Slug == team[teamIndex].Slug {
 				blueCount++
