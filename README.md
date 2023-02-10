@@ -8,11 +8,10 @@ Unfortunately, any public resources don't provide that functionality (to be able
 This project is using zsr.octane.gg API to load data of certain players, teams and matches, which are then being compared between each other to find common matches in the past; then counts the value of the matchup (using completeness of teams and date of match) and sums all matches. So, for any 2 teams of 3 players it shows their past history and summary of their scores in those matchups.
 (I am actually so nooby in describing projects more in detail, and have no idea of what it should look like. Maybe the code itself and the comments will tell you more)
 
-It is very early in the making, for now it can calculate the rating of past matchups of two existing teams based on data until February 2nd, 2023. I plan to add much more functionality in the future.
+It is very early in the making, for now it can calculate the rating of past matchups of two existing teams. I plan to add much more functionality in the future.
 
 Future plans:
   - Unify paths to files!!! (it refers to my own file system)
-  - Personalise input - provide a choice between whether to compare players or teams
   - Detail output - group matches by completeness of rosters, sort by date
   - Give out match predictions based on output
   - Create dataset with only necessary info (for now, info of all player's matches weighs 1.5 GB, of which 98% or more are in-game stats, which aren't used at all)

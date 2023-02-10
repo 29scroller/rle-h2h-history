@@ -3,7 +3,12 @@ package headtohead_history
 import (
 	"fmt"
 	"math"
+	"sort"
+	"strconv"
 	"time"
+
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 )
 
 // ParseAllMatchesOfPlayer parses all matches of a player by player ID into MultipleMatches struct.
@@ -26,7 +31,7 @@ func ParseMatchInfo(matchId string) Match {
 }
 
 // FindPlayersOfTeamInMatch searches for each player of a team in Blue and Orange sides of match.
-func FindPlayersOfTeamInMatch(team []Player, match Match) (blueCount, orangeCount uint8) {
+func CountPlayersOfTeamInMatch(team []Player, match Match) (blueCount, orangeCount uint8) {
 	for teamIndex := 0; teamIndex < 3; teamIndex++ {
 		for blueIndex := 0; blueIndex < 3; blueIndex++ {
 			if match.Blue.PlayerUp[blueIndex].Player.Slug == team[teamIndex].Slug {
@@ -117,19 +122,20 @@ func DateCoefficient(date string) (kdate float64) {
 
 // AdjustSeriesAndGames adjusts the result of the match by multiplying it on both coefficients defined earlier
 // Result is stored in AdjustedResult struct.
-func AdjustSeriesAndGames(match *Match, blueCount, orangeCount uint8) {
+func AdjustSeriesAndGames(match Match, blueCount, orangeCount uint8) (blueSeries, blueGames, orangeSeries, orangeGames float64) {
 	kcomp := CompletionCoefficient(blueCount, orangeCount)
 	kdate := DateCoefficient(match.Date)
-	match.Blue.AdjustedResult.AdjustedGames += (float64(match.Blue.Score) * kcomp * kdate)
-	match.Orange.AdjustedResult.AdjustedGames += (float64(match.Orange.Score) * kcomp * kdate)
+	blueGames += (float64(match.Blue.Score) * kcomp * kdate)
+	orangeGames += (float64(match.Orange.Score) * kcomp * kdate)
 	if match.Blue.Winner {
-		match.Blue.AdjustedResult.AdjustedSeries = kcomp * kdate
+		blueSeries = kcomp * kdate
 	} else if match.Orange.Winner {
-		match.Orange.AdjustedResult.AdjustedSeries = kcomp * kdate
+		orangeSeries = kcomp * kdate
 	} else {
-		match.Blue.AdjustedResult.AdjustedSeries = kcomp * kdate * 0.5
-		match.Orange.AdjustedResult.AdjustedSeries = kcomp * kdate * 0.5
+		blueSeries = kcomp * kdate * 0.5
+		orangeSeries = kcomp * kdate * 0.5
 	}
+	return
 }
 
 // RemoveDuplicatesinMatches removes duplicate matches from slice of Matches struct.
@@ -148,28 +154,176 @@ func RemoveDuplicatesinMatches(matches []Match, teamName string) (result []Match
 // CalculateMatchesForTeam calculates adjusted series and score for slice of matches, given slices of players of both teams.
 func CalculateMatchesForTeam(ourTeamMatches []Match, ourTeamPlayers, theirTeamPlayers []Player) (ourSeries, theirSeries, ourGames, theirGames float64, counter int) {
 	for i := 0; i < len(ourTeamMatches); i++ {
-		ourBlueCount, ourOrangeCount := FindPlayersOfTeamInMatch(ourTeamPlayers, ourTeamMatches[i])
-		theirBlueCount, theirOrangeCount := FindPlayersOfTeamInMatch(theirTeamPlayers, ourTeamMatches[i])
+		ourBlueCount, ourOrangeCount := CountPlayersOfTeamInMatch(ourTeamPlayers, ourTeamMatches[i])
+		theirBlueCount, theirOrangeCount := CountPlayersOfTeamInMatch(theirTeamPlayers, ourTeamMatches[i])
 		btoo, otbo := IsMatchSuitable(ourBlueCount, theirBlueCount, ourOrangeCount, theirOrangeCount)
 		if btoo {
-			AdjustSeriesAndGames(&ourTeamMatches[i], ourBlueCount, theirOrangeCount)
-			ourSeries += ourTeamMatches[i].Blue.AdjustedResult.AdjustedSeries
-			theirSeries += ourTeamMatches[i].Orange.AdjustedResult.AdjustedSeries
-			ourGames += ourTeamMatches[i].Blue.AdjustedResult.AdjustedGames
-			theirGames += ourTeamMatches[i].Orange.AdjustedResult.AdjustedGames
-			fmt.Printf("Match %s from %s is eligible! Adjusted series: %.2f - %.2f, adjusted games: %.2f - %.2f\n", ourTeamMatches[i].MEvent.Name, ourTeamMatches[i].Date, ourTeamMatches[i].Blue.AdjustedResult.AdjustedSeries, ourTeamMatches[i].Orange.AdjustedResult.AdjustedSeries, ourTeamMatches[i].Blue.AdjustedResult.AdjustedGames, ourTeamMatches[i].Orange.AdjustedResult.AdjustedGames)
+			ourSeries, ourGames, theirSeries, theirGames = AdjustSeriesAndGames(ourTeamMatches[i], ourBlueCount, theirOrangeCount)
+			fmt.Printf("Match %s from %s is eligible! Adjusted series: %.2f - %.2f, adjusted games: %.2f - %.2f\n", ourTeamMatches[i].MEvent.Name, ourTeamMatches[i].Date, ourSeries, theirSeries, ourGames, theirGames)
 		}
 		if otbo {
-			AdjustSeriesAndGames(&ourTeamMatches[i], theirBlueCount, ourOrangeCount)
-			ourSeries += ourTeamMatches[i].Orange.AdjustedResult.AdjustedSeries
-			theirSeries += ourTeamMatches[i].Blue.AdjustedResult.AdjustedSeries
-			ourGames += ourTeamMatches[i].Orange.AdjustedResult.AdjustedGames
-			theirGames += ourTeamMatches[i].Blue.AdjustedResult.AdjustedGames
-			fmt.Printf("Match %s from %s is eligible! Adjusted series: %.2f - %.2f, adjusted games: %.2f - %.2f\n", ourTeamMatches[i].MEvent.Name, ourTeamMatches[i].Date, ourTeamMatches[i].Orange.AdjustedResult.AdjustedSeries, ourTeamMatches[i].Blue.AdjustedResult.AdjustedSeries, ourTeamMatches[i].Orange.AdjustedResult.AdjustedGames, ourTeamMatches[i].Blue.AdjustedResult.AdjustedGames)
+			theirSeries, theirGames, ourSeries, ourGames = AdjustSeriesAndGames(ourTeamMatches[i], ourBlueCount, theirOrangeCount)
+			fmt.Printf("Match %s from %s is eligible! Adjusted series: %.2f - %.2f, adjusted games: %.2f - %.2f\n", ourTeamMatches[i].MEvent.Name, ourTeamMatches[i].Date, ourSeries, theirSeries, ourGames, theirGames)
 		}
 		if btoo || otbo {
 			counter++
 		}
 	}
 	return
+}
+
+func CollectSuitableMatches(ourTeamMatches []Match, ourTeamPlayers, theirTeamPlayers []Player) (suitableMatches []Match, counter int) {
+	for i := 0; i < len(ourTeamMatches); i++ {
+		ourBlueCount, ourOrangeCount := CountPlayersOfTeamInMatch(ourTeamPlayers, ourTeamMatches[i])
+		theirBlueCount, theirOrangeCount := CountPlayersOfTeamInMatch(theirTeamPlayers, ourTeamMatches[i])
+		btoo, otbo := IsMatchSuitable(ourBlueCount, theirBlueCount, ourOrangeCount, theirOrangeCount)
+		if btoo {
+			ourTeamMatches[i].btoo = true
+		}
+		if otbo {
+			ourTeamMatches[i].otbo = true
+		}
+		if btoo || otbo {
+			counter++
+			date := ourTeamMatches[i].Date[:10]
+			layout := "2006-01-02"
+			ourTeamMatches[i].DateTime, _ = time.Parse(layout, date)
+			ourTeamMatches[i].BlueT = ourBlueCount
+			ourTeamMatches[i].BlueO = theirBlueCount
+			ourTeamMatches[i].OrangeT = ourOrangeCount
+			ourTeamMatches[i].OrangeO = theirOrangeCount
+			suitableMatches = append(suitableMatches, ourTeamMatches[i])
+		}
+	}
+	return
+}
+
+func DistributeSuitableMatchesToSlices(suitableMatches []Match) (allSlices [][]Match) {
+	var m3v3, m2v3, m2v2, m1v3, m1v2, m1v1 []Match
+	for i := 0; i < len(suitableMatches); i++ {
+		switch {
+		case suitableMatches[i].BlueT == 3 && suitableMatches[i].OrangeO == 3,
+			suitableMatches[i].OrangeT == 3 && suitableMatches[i].BlueO == 3:
+			m3v3 = append(m3v3, suitableMatches[i])
+		case suitableMatches[i].BlueT == 2 && suitableMatches[i].OrangeO == 3,
+			suitableMatches[i].BlueT == 3 && suitableMatches[i].OrangeO == 2,
+			suitableMatches[i].OrangeT == 2 && suitableMatches[i].BlueO == 3,
+			suitableMatches[i].OrangeT == 3 && suitableMatches[i].BlueO == 2:
+			m2v3 = append(m2v3, suitableMatches[i])
+		case suitableMatches[i].BlueT == 2 && suitableMatches[i].OrangeO == 2,
+			suitableMatches[i].OrangeT == 2 && suitableMatches[i].BlueO == 2:
+			m2v2 = append(m2v2, suitableMatches[i])
+		case suitableMatches[i].BlueT == 1 && suitableMatches[i].OrangeO == 3,
+			suitableMatches[i].BlueT == 3 && suitableMatches[i].OrangeO == 1,
+			suitableMatches[i].OrangeT == 1 && suitableMatches[i].BlueO == 3,
+			suitableMatches[i].OrangeT == 3 && suitableMatches[i].BlueO == 1:
+			m1v3 = append(m1v3, suitableMatches[i])
+		case suitableMatches[i].BlueT == 2 && suitableMatches[i].OrangeO == 1,
+			suitableMatches[i].BlueT == 1 && suitableMatches[i].OrangeO == 2,
+			suitableMatches[i].OrangeT == 2 && suitableMatches[i].BlueO == 1,
+			suitableMatches[i].OrangeT == 1 && suitableMatches[i].BlueO == 2:
+			m1v2 = append(m1v2, suitableMatches[i])
+		case suitableMatches[i].BlueT == 1 && suitableMatches[i].OrangeO == 1,
+			suitableMatches[i].OrangeT == 1 && suitableMatches[i].BlueO == 1:
+			m1v1 = append(m1v1, suitableMatches[i])
+		}
+	}
+	allSlices = [][]Match{m3v3, m2v3, m2v2, m1v3, m1v2, m1v1}
+	return
+}
+
+func OperateMatchesWithinSlice(mxvx []Match, ourPlayers, theirPlayers []Player) (sumOurSeries, sumOurGames, sumTheirSeries, sumTheirGames float64) {
+	sort.Slice(mxvx, func(i, j int) bool { return mxvx[i].DateTime.After(mxvx[j].DateTime) })
+	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+	columnFmt := color.New(color.FgYellow).SprintfFunc()
+	tbl := table.New("Event", "Date", "Team 1", "Players", "Score", "Adjusted Score", "Team 2", "Players")
+	tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+	for i := 0; i < len(mxvx); i++ {
+		bluePlayers := []string{mxvx[i].Blue.PlayerUp[0].Player.Tag, mxvx[i].Blue.PlayerUp[1].Player.Tag, mxvx[i].Blue.PlayerUp[2].Player.Tag}
+		orangePlayers := []string{mxvx[i].Orange.PlayerUp[0].Player.Tag, mxvx[i].Orange.PlayerUp[1].Player.Tag, mxvx[i].Orange.PlayerUp[2].Player.Tag}
+		if mxvx[i].btoo {
+			HighlightPlayersOfTeamInBlue(ourPlayers, &mxvx[i])
+			HighlightPlayersOfTeamInOrange(theirPlayers, &mxvx[i])
+			ourSeries, ourGames, theirSeries, theirGames := AdjustSeriesAndGames(mxvx[i], mxvx[i].BlueT, mxvx[i].OrangeO)
+			score := strconv.Itoa(int(mxvx[i].Blue.Score)) + "-" + strconv.Itoa(int(mxvx[i].Orange.Score))
+			adjScore := fmt.Sprintf("%.2f", ourGames) + "-" + fmt.Sprintf("%.2f", theirGames)
+			tbl.AddRow(mxvx[i].MEvent.Name, mxvx[i].Date, mxvx[i].Blue.TeamUp.Team.Name, bluePlayers, score, adjScore, mxvx[i].Orange.TeamUp.Team.Name, orangePlayers)
+			sumOurSeries += ourSeries
+			sumOurGames += ourGames
+			sumTheirSeries += theirSeries
+			sumTheirGames += theirGames
+		}
+		if mxvx[i].otbo {
+			HighlightPlayersOfTeamInBlue(theirPlayers, &mxvx[i])
+			HighlightPlayersOfTeamInOrange(ourPlayers, &mxvx[i])
+			theirSeries, theirGames, ourSeries, ourGames := AdjustSeriesAndGames(mxvx[i], mxvx[i].OrangeT, mxvx[i].BlueO)
+			score := strconv.Itoa(int(mxvx[i].Orange.Score)) + "-" + strconv.Itoa(int(mxvx[i].Blue.Score))
+			adjScore := fmt.Sprintf("%.2f", ourGames) + "-" + fmt.Sprintf("%.2f", theirGames)
+			tbl.AddRow(mxvx[i].MEvent.Name, mxvx[i].Date, mxvx[i].Orange.TeamUp.Team.Name, orangePlayers, score, adjScore, mxvx[i].Blue.TeamUp.Team.Name, bluePlayers)
+			sumOurSeries += ourSeries
+			sumOurGames += ourGames
+			sumTheirSeries += theirSeries
+			sumTheirGames += theirGames
+		}
+	}
+	tbl.Print()
+	return
+}
+
+func OperateAllSlices(allSlices [][]Match, ourPlayers, theirPlayers []Player) (sumOurSeries, sumOurGames, sumTheirSeries, sumTheirGames float64) {
+	var sliceName string
+	for i := 0; i < len(allSlices); i++ {
+		switch i {
+		case 0:
+			sliceName = "3v3"
+		case 1:
+			sliceName = "2v3"
+		case 2:
+			sliceName = "2v2"
+		case 3:
+			sliceName = "1v3"
+		case 4:
+			sliceName = "1v2"
+		case 5:
+			sliceName = "1v1"
+		}
+		if len(allSlices[i]) == 0 {
+			fmt.Println("No matches found with", sliceName, "completeness")
+		} else {
+			fmt.Println(sliceName, "matches:")
+			ourSeries, ourGames, theirSeries, theirGames := OperateMatchesWithinSlice(allSlices[i], ourPlayers, theirPlayers)
+			sumOurSeries += ourSeries
+			sumOurGames += ourGames
+			sumTheirSeries += theirSeries
+			sumTheirGames += theirGames
+		}
+	}
+	return
+}
+
+func NewWay(ourTeamMatches []Match, ourTeamPlayers, theirTeamPlayers []Player) (sumOurSeries, sumOurGames, sumTheirSeries, sumTheirGames float64, counter int) {
+	suitableMatches, counter := CollectSuitableMatches(ourTeamMatches, ourTeamPlayers, theirTeamPlayers)
+	allSlices := DistributeSuitableMatchesToSlices(suitableMatches)
+	sumOurSeries, sumOurGames, sumTheirSeries, sumTheirGames = OperateAllSlices(allSlices, ourTeamPlayers, theirTeamPlayers)
+	return
+}
+
+func HighlightPlayersOfTeamInBlue(team []Player, match *Match) {
+	for i := 0; i < len(team); i++ {
+		for j := 0; j < 3; j++ {
+			if team[i].Tag == match.Blue.PlayerUp[j].Player.Tag {
+				match.Blue.PlayerUp[j].Player.InTeam = true
+			}
+		}
+	}
+}
+
+func HighlightPlayersOfTeamInOrange(team []Player, match *Match) {
+	for i := 0; i < len(team); i++ {
+		for j := 0; j < 3; j++ {
+			if team[i].Tag == match.Orange.PlayerUp[j].Player.Tag {
+				match.Orange.PlayerUp[j].Player.InTeam = true
+			}
+		}
+	}
 }

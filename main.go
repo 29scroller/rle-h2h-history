@@ -31,6 +31,7 @@ func main() {
 		case 1:
 			firstTeamInfo, secondTeamInfo = headtohead_history.UserEnteringTeams()
 			choseInput = true
+			choseTeams = true
 			fmt.Printf("Finding active players of %s\n", firstTeamInfo.Name)
 			firstTeamPlayers = headtohead_history.FindActivePlayersByTeamID(firstTeamInfo.Id)
 			fmt.Printf("Finding active players of %s\n", secondTeamInfo.Name)
@@ -89,14 +90,25 @@ func main() {
 	var firstAdjustedSeriesSum, firstAdjustedGamesSum float64
 	var secondAdjustedSeriesSum, secondAdjustedGamesSum float64
 
-	fmt.Println("Starting to check matches...")
+	/* 	fmt.Println("Starting to check matches...")
+	   	if len(firstTeamMatches) < len(secondTeamMatches) {
+	   		fmt.Printf("%s has less matches, checking their matches (their results are first in output)\n", firstTeamInfo.Name)
+	   		firstAdjustedSeriesSum, secondAdjustedSeriesSum, firstAdjustedGamesSum, secondAdjustedGamesSum, eligibleMatchCounter = headtohead_history.CalculateMatchesForTeam(firstTeamMatches, firstTeamPlayers, secondTeamPlayers)
+	   	} else {
+	   		fmt.Printf("%s has less matches, checking their matches (their results are first in output)\n", secondTeamInfo.Name)
+	   		secondAdjustedSeriesSum, firstAdjustedSeriesSum, secondAdjustedGamesSum, firstAdjustedGamesSum, eligibleMatchCounter = headtohead_history.CalculateMatchesForTeam(secondTeamMatches, secondTeamPlayers, firstTeamPlayers)
+	   	}
+	*/
+
+	fmt.Println("Starting to check matches differently...")
 	if len(firstTeamMatches) < len(secondTeamMatches) {
 		fmt.Printf("%s has less matches, checking their matches (their results are first in output)\n", firstTeamInfo.Name)
-		firstAdjustedSeriesSum, secondAdjustedSeriesSum, firstAdjustedGamesSum, secondAdjustedGamesSum, eligibleMatchCounter = headtohead_history.CalculateMatchesForTeam(firstTeamMatches, firstTeamPlayers, secondTeamPlayers)
+		firstAdjustedSeriesSum, firstAdjustedGamesSum, secondAdjustedSeriesSum, secondAdjustedGamesSum, eligibleMatchCounter = headtohead_history.NewWay(firstTeamMatches, firstTeamPlayers, secondTeamPlayers)
 	} else {
 		fmt.Printf("%s has less matches, checking their matches (their results are first in output)\n", secondTeamInfo.Name)
-		secondAdjustedSeriesSum, firstAdjustedSeriesSum, secondAdjustedGamesSum, firstAdjustedGamesSum, eligibleMatchCounter = headtohead_history.CalculateMatchesForTeam(secondTeamMatches, secondTeamPlayers, firstTeamPlayers)
+		secondAdjustedSeriesSum, secondAdjustedGamesSum, firstAdjustedSeriesSum, firstAdjustedGamesSum, eligibleMatchCounter = headtohead_history.NewWay(secondTeamMatches, secondTeamPlayers, firstTeamPlayers)
 	}
+
 	fmt.Println()
 	fmt.Println("Calculation is complete!")
 	fmt.Printf("Matches found: %d\n", eligibleMatchCounter)
