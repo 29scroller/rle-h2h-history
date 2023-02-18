@@ -44,6 +44,10 @@ func main() {
 		}
 	}
 
+	fmt.Println("Checking if all players have files...")
+	headtohead_history.CheckIfTeamPlayersHaveFiles(firstTeamPlayers)
+	headtohead_history.CheckIfTeamPlayersHaveFiles(secondTeamPlayers)
+
 	choseInput = false
 	for !choseInput {
 		userInput := headtohead_history.UserChoosingWhetherToCheckPlayers()
@@ -66,10 +70,6 @@ func main() {
 			fmt.Println("Need either 1 or 0 to continue")
 		}
 	}
-
-	fmt.Println("Checking if all players have files...")
-	headtohead_history.CheckIfTeamPlayersHaveFiles(firstTeamPlayers)
-	headtohead_history.CheckIfTeamPlayersHaveFiles(secondTeamPlayers)
 
 	fmt.Println("Reading data from players' files...")
 	var firstTeamMatches, secondTeamMatches []headtohead_history.Match
