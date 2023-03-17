@@ -103,10 +103,10 @@ func main() {
 	fmt.Println("Starting to check matches differently...")
 	if len(firstTeamMatches) < len(secondTeamMatches) {
 		fmt.Printf("%s has less matches, checking their matches (their results are first in output)\n", firstTeamInfo.Name)
-		firstAdjustedSeriesSum, firstAdjustedGamesSum, secondAdjustedSeriesSum, secondAdjustedGamesSum, eligibleMatchCounter = headtohead_history.NewWay(firstTeamMatches, firstTeamPlayers, secondTeamPlayers)
+		firstAdjustedSeriesSum, firstAdjustedGamesSum, secondAdjustedSeriesSum, secondAdjustedGamesSum, eligibleMatchCounter = headtohead_history.CalculateScoreForMatchup(firstTeamMatches, firstTeamPlayers, secondTeamPlayers)
 	} else {
 		fmt.Printf("%s has less matches, checking their matches (their results are first in output)\n", secondTeamInfo.Name)
-		secondAdjustedSeriesSum, secondAdjustedGamesSum, firstAdjustedSeriesSum, firstAdjustedGamesSum, eligibleMatchCounter = headtohead_history.NewWay(secondTeamMatches, secondTeamPlayers, firstTeamPlayers)
+		secondAdjustedSeriesSum, secondAdjustedGamesSum, firstAdjustedSeriesSum, firstAdjustedGamesSum, eligibleMatchCounter = headtohead_history.CalculateScoreForMatchup(secondTeamMatches, secondTeamPlayers, firstTeamPlayers)
 	}
 
 	fmt.Println()

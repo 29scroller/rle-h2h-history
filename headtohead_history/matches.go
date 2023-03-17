@@ -56,7 +56,7 @@ func LoadAndAppendTeamMatchesFromFiles(matches *[]Match, players []Player, teamN
 	fmt.Println()
 }
 
-// IsMatchEligible checks whether match is suitable for calculation.
+// IsMatchSuitable checks whether match is suitable for calculation.
 func IsMatchSuitable(blueTeammates, blueOpponents, orangeTeammates, orangeOpponents uint8) (btoo, otbo bool) {
 	if blueTeammates > 0 && orangeOpponents > 0 {
 		btoo = true
@@ -72,19 +72,16 @@ func CompletionCoefficient(blueCount, orangeCount uint8) (kcomp float64) {
 	switch {
 	case blueCount == 3 && orangeCount == 3:
 		kcomp = 1
-	case blueCount == 2 && orangeCount == 3:
-		kcomp = float64(5) / float64(6)
-	case blueCount == 3 && orangeCount == 2:
+	case blueCount == 2 && orangeCount == 3,
+		blueCount == 3 && orangeCount == 2:
 		kcomp = float64(5) / float64(6)
 	case blueCount == 2 && orangeCount == 2:
 		kcomp = float64(2) / float64(3)
-	case blueCount == 1 && orangeCount == 3:
+	case blueCount == 1 && orangeCount == 3,
+		blueCount == 3 && orangeCount == 1:
 		kcomp = float64(1) / float64(2)
-	case blueCount == 3 && orangeCount == 1:
-		kcomp = float64(1) / float64(2)
-	case blueCount == 1 && orangeCount == 2:
-		kcomp = float64(1) / float64(3)
-	case blueCount == 2 && orangeCount == 1:
+	case blueCount == 1 && orangeCount == 2,
+		blueCount == 2 && orangeCount == 1:
 		kcomp = float64(1) / float64(3)
 	case blueCount == 1 && orangeCount == 1:
 		kcomp = float64(1) / float64(6)
@@ -121,7 +118,6 @@ func DateCoefficient(date string) (kdate float64) {
 }
 
 // AdjustSeriesAndGames adjusts the result of the match by multiplying it on both coefficients defined earlier
-// Result is stored in AdjustedResult struct.
 func AdjustSeriesAndGames(match Match, blueCount, orangeCount uint8) (blueSeries, blueGames, orangeSeries, orangeGames float64) {
 	kcomp := CompletionCoefficient(blueCount, orangeCount)
 	kdate := DateCoefficient(match.Date)
@@ -301,7 +297,7 @@ func OperateAllSlices(allSlices [][]Match, ourPlayers, theirPlayers []Player) (s
 	return
 }
 
-func NewWay(ourTeamMatches []Match, ourTeamPlayers, theirTeamPlayers []Player) (sumOurSeries, sumOurGames, sumTheirSeries, sumTheirGames float64, counter int) {
+func CalculateScoreForMatchup(ourTeamMatches []Match, ourTeamPlayers, theirTeamPlayers []Player) (sumOurSeries, sumOurGames, sumTheirSeries, sumTheirGames float64, counter int) {
 	suitableMatches, counter := CollectSuitableMatches(ourTeamMatches, ourTeamPlayers, theirTeamPlayers)
 	allSlices := DistributeSuitableMatchesToSlices(suitableMatches)
 	sumOurSeries, sumOurGames, sumTheirSeries, sumTheirGames = OperateAllSlices(allSlices, ourTeamPlayers, theirTeamPlayers)

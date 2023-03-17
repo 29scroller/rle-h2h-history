@@ -79,7 +79,7 @@ func UrlToByteSlice(url string) (rawData []byte) {
 
 // WriteMatchesOfPlayerToFile writes all found matches of player to file named as player's slug
 func WriteMatchesOfPlayerToFile(player Player, rawData []byte) {
-	f, err := os.Create("C:\\Users\\29scroller\\go\\rle-h2h-history\\matches_of_players\\" + player.Slug + ".txt")
+	f, err := os.Create("matches_of_players\\" + player.Slug + ".txt")
 	if err != nil {
 		fmt.Println("Could not create file :(")
 		panic(err)
@@ -132,14 +132,10 @@ func BiggestOfFileAndJsonForPlayer(player Player) (biggestSlice []byte, hasChang
 	} else {
 		return oldData, false
 	}
-	/* 	UnmarshalObject(oldData, &oldMatches)
-	   	UnmarshalObject(newData, &newMatches)
-	   	areSame = reflect.DeepEqual(oldData, newData)
-	*/
 }
 
 func AppendMatchesOfPlayerToFile(player Player, newData []byte) {
-	f, err := os.OpenFile("C:\\Users\\29scroller\\go\\rle-h2h-history\\matches_of_players\\"+player.Slug+".txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile("matches_of_players\\"+player.Slug+".txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		fmt.Println("Could not create file :(")
 		panic(err)
@@ -168,7 +164,7 @@ func LoadPlayerMatchesFromFile(player Player) (matchesOnly []Match) {
 }
 
 func DoesPlayerFileExist(player Player) bool {
-	_, error := os.Stat("C:\\Users\\29scroller\\go\\rle-h2h-history\\matches_of_players\\" + player.Slug + ".txt")
+	_, error := os.Stat("matches_of_players\\" + player.Slug + ".txt")
 	if os.IsNotExist(error) {
 		return false
 	} else {
@@ -190,7 +186,7 @@ func CheckIfTeamPlayersHaveFiles(players []Player) {
 }
 
 func FileToByteSlice(player Player) (rawData []byte) {
-	rawData, err := os.ReadFile("C:\\Users\\29scroller\\go\\rle-h2h-history\\matches_of_players\\" + player.Slug + ".txt")
+	rawData, err := os.ReadFile("matches_of_players\\" + player.Slug + ".txt")
 	if err != nil {
 		panic(err)
 	}
