@@ -16,7 +16,9 @@ type Match struct {
 	Id                             string `json:"_id"`
 	OctaneId                       string `json:"octane_id"`
 	MEvent                         Event  `json:"event"`
+	Stage                          Stage  `json:"stage"`
 	Date                           string `json:"date"`
+	Format                         Format `json:"format"`
 	Blue                           Games  `json:"blue"`
 	Orange                         Games  `json:"orange"`
 	DateTime                       time.Time
@@ -25,16 +27,25 @@ type Match struct {
 }
 
 type Event struct {
-	Id   string `json:"_id"`
-	Name string `json:"name"`
-	Tier string `json:"tier"`
+	Id     string `json:"_id"`
+	Name   string `json:"name"`
+	Region string `json:"region"`
+	Tier   string `json:"tier"`
+}
+
+type Stage struct {
+	Lan bool `json:"lan"`
+}
+
+type Format struct {
+	Length int8 `json:"length"`
 }
 
 type Games struct {
-	Score          uint8              `json:"score"`
-	Winner         bool               `json:"winner"`
-	TeamUp         TeamForMatches     `json:"team"`
-	PlayerUp       []PlayerForMatches `json:"players"`
+	Score    uint8              `json:"score"`
+	Winner   bool               `json:"winner"`
+	TeamUp   TeamForMatches     `json:"team"`
+	PlayerUp []PlayerForMatches `json:"players"`
 }
 
 type TeamForMatches struct {
@@ -57,11 +68,13 @@ type Player struct {
 	Teams      []Team `json:"teams"`
 	Substitute bool   `json:"substitute"`
 	Coach      bool   `json:"coach"`
+	Country    string `json:"country"`
 	InTeam     bool
 }
 
 type Team struct {
-	Id   string `json:"_id"`
-	Slug string `json:"slug"`
-	Name string `json:"name"`
+	Id    string `json:"_id"`
+	Slug  string `json:"slug"`
+	Name  string `json:"name"`
+	Image string `json:"image"`
 }

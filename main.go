@@ -6,25 +6,12 @@ import (
 )
 
 func main() {
-	/* var teamFound bool
-	var firstTeamInfo, secondTeamInfo headtohead_history.Team
-
-	for !teamFound {
-		firstTeamInfo, teamFound = headtohead_history.UserEnteringTeam("first")
-	}
-	fmt.Printf("Finding active players of %s by ID\n", firstTeamInfo.Name)
-	firstTeamPlayers := headtohead_history.FindActivePlayersByTeamID(firstTeamInfo.Id)
-
-	teamFound = false
-	for !teamFound {
-		secondTeamInfo, teamFound = headtohead_history.UserEnteringTeam("second")
-	}
-	fmt.Printf("Finding active players of %s by ID\n", secondTeamInfo.Name)
-	secondTeamPlayers := headtohead_history.FindActivePlayersByTeamID(secondTeamInfo.Id) */
-
 	var choseInput, choseTeams bool
 	var firstTeamInfo, secondTeamInfo headtohead_history.Team
 	var firstTeamPlayers, secondTeamPlayers []headtohead_history.Player
+
+	//headtohead_history.CollectAllMatchesInCSV()
+
 	for !choseInput {
 		userInput := headtohead_history.UserChoosingInput()
 		switch userInput {

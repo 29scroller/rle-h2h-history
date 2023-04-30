@@ -2,6 +2,7 @@ package headtohead_history
 
 import (
 	"bufio"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -85,7 +87,7 @@ func WriteMatchesOfPlayerToFile(player Player, rawData []byte) {
 		panic(err)
 	}
 	if len(rawData) == 0 {
-		rawData = CollectMatchesInString(player)
+		rawData = CollectMatchesOfPlayerInString(player)
 	}
 	WriteByteSliceToPlayerFile(*f, player, rawData)
 	fmt.Printf("Wrote info to file %s.txt\n", player.Slug)
@@ -107,7 +109,7 @@ func CheckPlayerForNewMatches(player Player) {
 	}
 }
 
-func CollectMatchesInString(player Player) (totalData []byte) {
+func CollectMatchesOfPlayerInString(player Player) (totalData []byte) {
 	page := 1
 	for {
 		url := "https://zsr.octane.gg/matches?mode=3&page=" + fmt.Sprint(page) + "&player=" + player.Id
@@ -124,9 +126,71 @@ func CollectMatchesInString(player Player) (totalData []byte) {
 	}
 }
 
+func CollectAllMatchesInString() (totalData []byte) {
+	page := 1
+	for {
+		url := "https://zsr.octane.gg/matches?mode=3&sort=date%3Aasc&page=" + fmt.Sprint(page)
+		rawData := UrlToByteSlice(url)
+		rawData = []byte(strings.TrimSpace(string(rawData)))
+		endString := `{"matches":[],"page":` + fmt.Sprint(page) + `,"perPage":100,"pageSize":0}`
+		if string(rawData) == endString {
+			return totalData
+		}
+		totalData = append(totalData, rawData...)
+		totalData = append(totalData, "\n"...)
+		fmt.Printf("Read page %d of all matches \n", page)
+		page += 1
+	}
+}
+
+func CollectAllMatchesInCSV() {
+	page := 1
+	file, err := os.Create("matches.csv")
+
+	if err != nil {
+		log.Fatalln("failed to open file", err)
+	}
+
+	w := csv.NewWriter(file)
+
+	w.Write(CreateCSVHeader())
+	//file.Close()
+	for {
+		url := "https://zsr.octane.gg/matches?mode=3&sort=date:asc&page=" + fmt.Sprint(page)
+		rawData := UrlToByteSlice(url)
+		var tempMatches MultipleMatches
+		UnmarshalObject(rawData, &tempMatches)
+		data := MatchesToStringSlice(tempMatches)
+		if len(data) == 0 {
+			break
+		}
+		file, err = os.Open("matches.csv")
+		if err != nil {
+			log.Fatalln("failed to open file", err)
+		}
+		if err := w.WriteAll(data); err != nil {
+			log.Fatalln("error writing record to file", err)
+		}
+		file.Close()
+		/* for _, row := range data {
+			file, err = os.Open("matches.csv")
+			if err != nil {
+				log.Fatalln("failed to open file", err)
+			}
+			if err := w.Write(row); err != nil {
+				log.Fatalln("error writing record to file", err)
+			}
+			file.Close()
+		} */
+		fmt.Println("Wrote info from page", page)
+		page++
+		w.Flush()
+	}
+}
+
 func BiggestOfFileAndJsonForPlayer(player Player) (biggestSlice []byte, hasChanged bool) {
 	oldData := FileToByteSlice(player)
-	newData := CollectMatchesInString(player)
+	newData := CollectMatchesOfPlayerInString(player)
 	if len(newData) > len(oldData) {
 		return newData, true
 	} else {
@@ -276,4 +340,80 @@ func UserChoosingWhetherToCheckPlayers() (userInput int) {
 	fmt.Println("Do you want to check players' files for updates? Type 1 to check or 0 to not check")
 	fmt.Scanln(&userInput)
 	return
+}
+
+func CompileAllPlayerRecords() {
+	rawData := CollectAllMatchesInString()
+	var matches MultipleMatches
+	UnmarshalObject(rawData, &matches)
+	f, err := os.Create("matches.csv")
+
+	if err != nil {
+		log.Fatalln("failed to open file", err)
+	}
+
+	w := csv.NewWriter(f)
+	defer w.Flush()
+
+	w.Write(CreateCSVHeader())
+	data := MatchesToStringSlice(matches)
+
+	for _, row := range data {
+		f, err = os.Open("matches.csv")
+		if err != nil {
+			log.Fatalln("failed to open file", err)
+		}
+		if err := w.Write(row); err != nil {
+			log.Fatalln("error writing record to file", err)
+		}
+		f.Close()
+	}
+}
+
+func CreateCSVHeader() (header []string) {
+	header = append(header, "Match ID", "Event ID", "Event Name", "Event Region", "Event Tier")
+	header = append(header, "Is match on LAN?", "Match Date", "Best of _")
+	header = append(header, "Blue Team ID", "Blue Team Name", "Blue Team Image")
+	header = append(header, "Blue Player ID", "Blue Player Tag", "Blue Player Country")
+	header = append(header, "Blue Games Score", "Blue Wins Series?")
+	header = append(header, "Orange Team ID", "Orange Team Name", "Orange Team Image")
+	header = append(header, "Orange Player ID", "Orange Player Tag", "Orange Player Country")
+	header = append(header, "Orange Games Score", "Orange Wins Series?")
+	return
+}
+
+func MatchesToStringSlice(matches MultipleMatches) (matchSlice [][]string) {
+	for i := 0; i < len(matches.Matches); i++ {
+		matchSlice = append(matchSlice, FillStringSliceWithAllData(matches.Matches[i])...)
+	}
+	return
+}
+
+func FillStringSliceWithMatchData(match Match) (stringSlice []string) {
+	stringSlice = append(stringSlice, match.Id, match.MEvent.Id, match.MEvent.Name, match.MEvent.Region, match.MEvent.Tier)
+	stringSlice = append(stringSlice, strconv.FormatBool(match.Stage.Lan), match.Date, strconv.FormatInt(int64(match.Format.Length), 10))
+	stringSlice = append(stringSlice, match.Blue.TeamUp.Team.Id, match.Blue.TeamUp.Team.Name, match.Blue.TeamUp.Team.Image)
+	stringSlice = append(stringSlice, "", "", "")
+	stringSlice = append(stringSlice, strconv.FormatUint(uint64(match.Blue.Score), 10), strconv.FormatBool(match.Blue.Winner))
+	stringSlice = append(stringSlice, match.Orange.TeamUp.Team.Id, match.Orange.TeamUp.Team.Name, match.Orange.TeamUp.Team.Image)
+	stringSlice = append(stringSlice, "", "", "")
+	stringSlice = append(stringSlice, strconv.FormatUint(uint64(match.Orange.Score), 10), strconv.FormatBool(match.Orange.Winner))
+	return
+}
+
+func FillStringSliceWithAllData(match Match) (matchSlice [][]string) {
+	var tempSlice []string
+	for i := 0; i < len(match.Blue.PlayerUp); i++ {
+		for j := 0; j < len(match.Orange.PlayerUp); j++ {
+			tempSlice = FillStringSliceWithMatchData(match)
+			tempSlice[11] = match.Blue.PlayerUp[i].Player.Id
+			tempSlice[12] = match.Blue.PlayerUp[i].Player.Tag
+			tempSlice[13] = match.Blue.PlayerUp[i].Player.Country
+			tempSlice[19] = match.Orange.PlayerUp[j].Player.Id
+			tempSlice[20] = match.Orange.PlayerUp[j].Player.Tag
+			tempSlice[21] = match.Orange.PlayerUp[j].Player.Country
+			matchSlice = append(matchSlice, tempSlice)
+		}
+	}
+	return matchSlice
 }
