@@ -168,6 +168,7 @@ func CalculateMatchesForTeam(ourTeamMatches []Match, ourTeamPlayers, theirTeamPl
 	return
 }
 
+// CollectSuitableMatches checks whether matches are suitable for set conditions and collects them into slice of matches
 func CollectSuitableMatches(ourTeamMatches []Match, ourTeamPlayers, theirTeamPlayers []Player) (suitableMatches []Match, counter int) {
 	for i := 0; i < len(ourTeamMatches); i++ {
 		ourBlueCount, ourOrangeCount := CountPlayersOfTeamInMatch(ourTeamPlayers, ourTeamMatches[i])
@@ -194,6 +195,7 @@ func CollectSuitableMatches(ourTeamMatches []Match, ourTeamPlayers, theirTeamPla
 	return
 }
 
+// DistributeSuitableMatchesToSlices writes each suitable match to corresponding slice and retuns slice of slices of matches
 func DistributeSuitableMatchesToSlices(suitableMatches []Match) (allSlices [][]Match) {
 	var m3v3, m2v3, m2v2, m1v3, m1v2, m1v1 []Match
 	for i := 0; i < len(suitableMatches); i++ {
@@ -228,6 +230,7 @@ func DistributeSuitableMatchesToSlices(suitableMatches []Match) (allSlices [][]M
 	return
 }
 
+// OperateMatchesWithinSlice processes each match in slice and adds results to the table, then prints it
 func OperateMatchesWithinSlice(mxvx []Match, ourPlayers, theirPlayers []Player) (sumOurSeries, sumOurGames, sumTheirSeries, sumTheirGames float64) {
 	sort.Slice(mxvx, func(i, j int) bool { return mxvx[i].DateTime.After(mxvx[j].DateTime) })
 	headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
@@ -266,6 +269,7 @@ func OperateMatchesWithinSlice(mxvx []Match, ourPlayers, theirPlayers []Player) 
 	return
 }
 
+// OperateAllSlices handles processing all slices and sums the data between slices
 func OperateAllSlices(allSlices [][]Match, ourPlayers, theirPlayers []Player) (sumOurSeries, sumOurGames, sumTheirSeries, sumTheirGames float64) {
 	var sliceName string
 	for i := 0; i < len(allSlices); i++ {
@@ -297,6 +301,7 @@ func OperateAllSlices(allSlices [][]Match, ourPlayers, theirPlayers []Player) (s
 	return
 }
 
+// CalculateScoreForMatchup calculates score for matchup and returns it
 func CalculateScoreForMatchup(ourTeamMatches []Match, ourTeamPlayers, theirTeamPlayers []Player) (sumOurSeries, sumOurGames, sumTheirSeries, sumTheirGames float64, counter int) {
 	suitableMatches, counter := CollectSuitableMatches(ourTeamMatches, ourTeamPlayers, theirTeamPlayers)
 	allSlices := DistributeSuitableMatchesToSlices(suitableMatches)
@@ -304,6 +309,7 @@ func CalculateScoreForMatchup(ourTeamMatches []Match, ourTeamPlayers, theirTeamP
 	return
 }
 
+// HighlightPlayersOfTeamInBlue adds InTeam marker to each player in blue team that is found in initial request
 func HighlightPlayersOfTeamInBlue(team []Player, match *Match) {
 	for i := 0; i < len(team); i++ {
 		for j := 0; j < 3; j++ {
@@ -314,6 +320,7 @@ func HighlightPlayersOfTeamInBlue(team []Player, match *Match) {
 	}
 }
 
+// HighlightPlayersOfTeamInBlue adds InTeam marker to each player in orange team that is found in initial request
 func HighlightPlayersOfTeamInOrange(team []Player, match *Match) {
 	for i := 0; i < len(team); i++ {
 		for j := 0; j < 3; j++ {

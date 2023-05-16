@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// FindPlayerByTag finds player by tag in zsr.octane.gg database and returns player's info
 func FindPlayerByTag(playerTag string) (Player, bool) {
 	//Writing team name in lowercase, replacing space with %20, trimming whitespace
 	playerTag = strings.TrimSpace(strings.ToLower(strings.Replace(playerTag, " ", "%20", 1)))

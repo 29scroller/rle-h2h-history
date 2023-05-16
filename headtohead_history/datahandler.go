@@ -87,18 +87,20 @@ func WriteMatchesOfPlayerToFile(player Player, rawData []byte) {
 		panic(err)
 	}
 	if len(rawData) == 0 {
-		rawData = CollectMatchesOfPlayerInString(player)
+		rawData = CollectMatchesOfPlayerInByteSlice(player)
 	}
 	WriteByteSliceToPlayerFile(*f, player, rawData)
 	fmt.Printf("Wrote info to file %s.txt\n", player.Slug)
 }
 
+// WriteByteSliceToPlayerFile writes matches data into set file
 func WriteByteSliceToPlayerFile(file os.File, player Player, rawData []byte) {
 	file.Write(rawData)
 	file.Close()
 	fmt.Printf("Wrote info of %s to file %s.txt\n", player.Tag, player.Slug)
 }
 
+// CheckPlayerForNewMatches indicates whether the player has new matches
 func CheckPlayerForNewMatches(player Player) {
 	data, sliceChanged := BiggestOfFileAndJsonForPlayer(player)
 	if sliceChanged {
@@ -109,7 +111,8 @@ func CheckPlayerForNewMatches(player Player) {
 	}
 }
 
-func CollectMatchesOfPlayerInString(player Player) (totalData []byte) {
+// CollectMatchesOfPlayerInByteSlice collects all matches of player in a byte slice
+func CollectMatchesOfPlayerInByteSlice(player Player) (totalData []byte) {
 	page := 1
 	for {
 		url := "https://zsr.octane.gg/matches?mode=3&page=" + fmt.Sprint(page) + "&player=" + player.Id
@@ -126,7 +129,8 @@ func CollectMatchesOfPlayerInString(player Player) (totalData []byte) {
 	}
 }
 
-func CollectAllMatchesInString() (totalData []byte) {
+// CollectAllMatchesInByteSlice collects all matches with certain parameters in a byte slice
+func CollectAllMatchesInByteSlice() (totalData []byte) {
 	page := 1
 	for {
 		url := "https://zsr.octane.gg/matches?mode=3&sort=date%3Aasc&page=" + fmt.Sprint(page)
@@ -143,6 +147,7 @@ func CollectAllMatchesInString() (totalData []byte) {
 	}
 }
 
+// CollectAllMatchesInCSV collects all matches with certain parameters in matches.csv file
 func CollectAllMatchesInCSV() {
 	page := 1
 	file, err := os.Create("matches.csv")
@@ -188,9 +193,10 @@ func CollectAllMatchesInCSV() {
 	}
 }
 
+// BiggestOfFileAndJsonForPlayer returns biggest byte slice between old data and new data
 func BiggestOfFileAndJsonForPlayer(player Player) (biggestSlice []byte, hasChanged bool) {
 	oldData := FileToByteSlice(player)
-	newData := CollectMatchesOfPlayerInString(player)
+	newData := CollectMatchesOfPlayerInByteSlice(player)
 	if len(newData) > len(oldData) {
 		return newData, true
 	} else {
@@ -198,6 +204,7 @@ func BiggestOfFileAndJsonForPlayer(player Player) (biggestSlice []byte, hasChang
 	}
 }
 
+// AppendMatchesOfPlayerToFile writes data to player file
 func AppendMatchesOfPlayerToFile(player Player, newData []byte) {
 	f, err := os.OpenFile("matches_of_players\\"+player.Slug+".txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -227,6 +234,7 @@ func LoadPlayerMatchesFromFile(player Player) (matchesOnly []Match) {
 	return
 }
 
+// DoesPlayerFileExist returns whether player file exists or not
 func DoesPlayerFileExist(player Player) bool {
 	_, error := os.Stat("matches_of_players\\" + player.Slug + ".txt")
 	if os.IsNotExist(error) {
@@ -236,6 +244,7 @@ func DoesPlayerFileExist(player Player) bool {
 	}
 }
 
+// CheckIfPlayerHasFile checks if player has the file and if not, creates it
 func CheckIfPlayerHasFile(player Player) {
 	var rawData []byte
 	if !DoesPlayerFileExist(player) {
@@ -243,12 +252,14 @@ func CheckIfPlayerHasFile(player Player) {
 	}
 }
 
+// CheckIfTeamPlayersHaveFiles checks if all players on the team have files
 func CheckIfTeamPlayersHaveFiles(players []Player) {
 	for i := 0; i < len(players); i++ {
 		CheckIfPlayerHasFile(players[i])
 	}
 }
 
+// FileToByteSlice reads player file and returns byte slice with file's data
 func FileToByteSlice(player Player) (rawData []byte) {
 	rawData, err := os.ReadFile("matches_of_players\\" + player.Slug + ".txt")
 	if err != nil {
@@ -265,6 +276,7 @@ func UnmarshalObject[T any](body []byte, object T) {
 	}
 }
 
+// UserEnteringTeams handles entering teams by user
 func UserEnteringTeams() (firstTeamInfo, secondTeamInfo Team) {
 	teamFound := false
 	for !teamFound {
@@ -292,12 +304,14 @@ func UserEnteringTeam(numberAdj string) (teamInfo Team, teamFound bool) {
 	return
 }
 
+// UserEnteringAllPlayers handles entering players by user
 func UserEnteringAllPlayers() (firstTeamPlayers, secondTeamPlayers []Player) {
 	firstTeamPlayers = UserEnteringPlayersOfTeam("first")
 	secondTeamPlayers = UserEnteringPlayersOfTeam("second")
 	return
 }
 
+// UserEnteringPlayersOfTeam handles entering players of one team by user
 func UserEnteringPlayersOfTeam(numberAdj string) (teamPlayers []Player) {
 	teamPlayers = make([]Player, 3)
 	fmt.Println("Write", numberAdj, "team's players")
@@ -316,6 +330,7 @@ func UserEnteringPlayersOfTeam(numberAdj string) (teamPlayers []Player) {
 	return
 }
 
+// UserEnteringPlayer handles entering info of one player by user
 func UserEnteringPlayer(numberAdj string) (playerInfo Player, playerfound bool) {
 	fmt.Println("Write", numberAdj, "player's tag")
 	reader := bufio.NewReader(os.Stdin)
@@ -330,20 +345,23 @@ func UserEnteringPlayer(numberAdj string) (playerInfo Player, playerfound bool) 
 	return
 }
 
+// UserChoosingInput handles choosing input method by user
 func UserChoosingInput() (userInput int) {
 	fmt.Println("Do you want to input teams or distinct players? Type 1 for teams or 2 for players")
 	fmt.Scanln(&userInput)
 	return
 }
 
+// UserChoosingWhetherToCheckPlayers handles choosing option of checking players' files by user
 func UserChoosingWhetherToCheckPlayers() (userInput int) {
 	fmt.Println("Do you want to check players' files for updates? Type 1 to check or 0 to not check")
 	fmt.Scanln(&userInput)
 	return
 }
 
+// CompileAllPlayerRecords writes all matches' data into matches.csv file
 func CompileAllPlayerRecords() {
-	rawData := CollectAllMatchesInString()
+	rawData := CollectAllMatchesInByteSlice()
 	var matches MultipleMatches
 	UnmarshalObject(rawData, &matches)
 	f, err := os.Create("matches.csv")
@@ -370,6 +388,7 @@ func CompileAllPlayerRecords() {
 	}
 }
 
+// CreateCSVHeader creates the first string of matches.csv file
 func CreateCSVHeader() (header []string) {
 	header = append(header, "Match ID", "Event ID", "Event Name", "Event Region", "Event Tier")
 	header = append(header, "Is match on LAN?", "Match Date", "Best of _")
@@ -382,6 +401,7 @@ func CreateCSVHeader() (header []string) {
 	return
 }
 
+// MatchesToStringSlice splits MultipleMatches struct into slice of slices of strings
 func MatchesToStringSlice(matches MultipleMatches) (matchSlice [][]string) {
 	for i := 0; i < len(matches.Matches); i++ {
 		matchSlice = append(matchSlice, FillStringSliceWithAllData(matches.Matches[i])...)
@@ -389,6 +409,7 @@ func MatchesToStringSlice(matches MultipleMatches) (matchSlice [][]string) {
 	return
 }
 
+// FillStringSliceWithMatchData fills slice of strings with match data
 func FillStringSliceWithMatchData(match Match) (stringSlice []string) {
 	stringSlice = append(stringSlice, match.Id, match.MEvent.Id, match.MEvent.Name, match.MEvent.Region, match.MEvent.Tier)
 	stringSlice = append(stringSlice, strconv.FormatBool(match.Stage.Lan), match.Date, strconv.FormatInt(int64(match.Format.Length), 10))
@@ -401,6 +422,7 @@ func FillStringSliceWithMatchData(match Match) (stringSlice []string) {
 	return
 }
 
+// FillStringSliceWithAllData fills slice of slices of strings with match data and players' data
 func FillStringSliceWithAllData(match Match) (matchSlice [][]string) {
 	var tempSlice []string
 	for i := 0; i < len(match.Blue.PlayerUp); i++ {
