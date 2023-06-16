@@ -341,7 +341,7 @@ func UserEnteringPlayer(numberAdj string) (playerInfo Player, playerfound bool) 
 	}
 	fmt.Println("Finding info of", playerTag)
 	playerInfo, playerfound = FindPlayerByTag(playerTag)
-	fmt.Printf("Found team = %t, \n", playerfound)
+	fmt.Printf("Found player = %t, \n", playerfound)
 	return
 }
 

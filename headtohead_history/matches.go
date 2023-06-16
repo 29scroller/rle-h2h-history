@@ -74,17 +74,17 @@ func CompletionCoefficient(blueCount, orangeCount uint8) (kcomp float64) {
 		kcomp = 1
 	case blueCount == 2 && orangeCount == 3,
 		blueCount == 3 && orangeCount == 2:
-		kcomp = float64(5) / float64(6)
+		kcomp = 0.75
 	case blueCount == 2 && orangeCount == 2:
-		kcomp = float64(2) / float64(3)
+		kcomp = 0.5
 	case blueCount == 1 && orangeCount == 3,
 		blueCount == 3 && orangeCount == 1:
-		kcomp = float64(1) / float64(2)
+		kcomp = 0.5
 	case blueCount == 1 && orangeCount == 2,
 		blueCount == 2 && orangeCount == 1:
-		kcomp = float64(1) / float64(3)
+		kcomp = 0.25
 	case blueCount == 1 && orangeCount == 1:
-		kcomp = float64(1) / float64(6)
+		kcomp = 0.1
 	default:
 		fmt.Println("Something's wrong with the CompletionCoefficient calculation")
 		kcomp = -1
@@ -100,16 +100,18 @@ func DateCoefficient(date string) (kdate float64) {
 	daysPassed := (time.Since(matchDate).Hours() / 24)
 	daysPassed = math.Round(daysPassed)
 	switch {
-	case daysPassed < 91:
+	case daysPassed < 45:
 		kdate = 1
-	case daysPassed < 182:
+	case daysPassed < 91:
 		kdate = 0.8
+	case daysPassed < 182:
+		kdate = 0.5
 	case daysPassed < 365:
-		kdate = 0.6
+		kdate = 0.25
 	case daysPassed < 730:
-		kdate = 0.4
+		kdate = 0.1	
 	case daysPassed >= 730:
-		kdate = 0.2
+		kdate = 0.01
 	default:
 		fmt.Println("Something's wrong with the DateCoefficient calculation")
 		kdate = -1
