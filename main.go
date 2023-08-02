@@ -99,6 +99,6 @@ func main() {
 	fmt.Println()
 	fmt.Println("Calculation is complete!")
 	fmt.Printf("Matches found: %d\n", eligibleMatchCounter)
-	fmt.Printf("%s results: series - %.2f, games - %.2f\n", firstTeamInfo.Name, firstAdjustedSeriesSum, firstAdjustedGamesSum)
-	fmt.Printf("%s results: series - %.2f, games - %.2f\n", secondTeamInfo.Name, secondAdjustedSeriesSum, secondAdjustedGamesSum)
+	fmt.Printf("%s results: series - %.3f, games - %.3f\n", firstTeamInfo.Name, firstAdjustedSeriesSum, firstAdjustedGamesSum)
+	fmt.Printf("%s results: series - %.3f, games - %.3f\n", secondTeamInfo.Name, secondAdjustedSeriesSum, secondAdjustedGamesSum)
 }
