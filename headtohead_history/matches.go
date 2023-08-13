@@ -74,17 +74,17 @@ func CompletionCoefficient(blueCount, orangeCount uint8) (kcomp float64) {
 		kcomp = 1
 	case blueCount == 2 && orangeCount == 3,
 		blueCount == 3 && orangeCount == 2:
-		kcomp = 0.75
+		kcomp = 0.75 // should be 2/3
 	case blueCount == 2 && orangeCount == 2:
-		kcomp = 0.5
+		kcomp = 0.5 // should be 2/3 * 2/3 = 4/9
 	case blueCount == 1 && orangeCount == 3,
 		blueCount == 3 && orangeCount == 1:
-		kcomp = 0.5
+		kcomp = 0.5 // should be 1/3
 	case blueCount == 1 && orangeCount == 2,
 		blueCount == 2 && orangeCount == 1:
-		kcomp = 0.25
+		kcomp = 0.25 // should be 1/3 * 2/3 = 2/9
 	case blueCount == 1 && orangeCount == 1:
-		kcomp = 0.1
+		kcomp = 0.1 // should be 1/3 * 1/3 = 1/9
 	default:
 		fmt.Println("Something's wrong with the CompletionCoefficient calculation")
 		kcomp = -1
