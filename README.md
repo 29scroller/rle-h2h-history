@@ -11,8 +11,6 @@ This project is using zsr.octane.gg API to load data of certain players, teams a
 It is very early in the making, for now it can calculate the rating of past matchups of two existing teams. I plan to add much more functionality in the future.
 
 Future plans:
-  - Unify paths to files!!! (it refers to my own file system)
-  - Detail output - group matches by completeness of rosters, sort by date
   - Give out match predictions based on output
   - Create dataset with only necessary info (for now, info of all player's matches weighs 1.5 GB, of which 98% or more are in-game stats, which aren't used at all)
   - Maybe to design an app for better usage? (seems too complicated for me for now, but we'll see)
