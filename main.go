@@ -42,11 +42,9 @@ func main() {
 		case 1:
 			fmt.Println("Checking all players for updates...")
 			for i := 0; i < len(firstTeamPlayers); i++ {
-				headtohead_history.CheckIfPlayerHasFile(firstTeamPlayers[i])
 				headtohead_history.CheckPlayerForNewMatches(firstTeamPlayers[i])
 			}
 			for i := 0; i < len(secondTeamPlayers); i++ {
-				headtohead_history.CheckIfPlayerHasFile(firstTeamPlayers[i])
 				headtohead_history.CheckPlayerForNewMatches(secondTeamPlayers[i])
 			}
 			choseInput = true

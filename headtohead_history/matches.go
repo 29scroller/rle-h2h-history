@@ -175,6 +175,8 @@ func CollectSuitableMatches(ourTeamMatches []Match, ourTeamPlayers, theirTeamPla
 	for i := 0; i < len(ourTeamMatches); i++ {
 		ourBlueCount, ourOrangeCount := CountPlayersOfTeamInMatch(ourTeamPlayers, ourTeamMatches[i])
 		theirBlueCount, theirOrangeCount := CountPlayersOfTeamInMatch(theirTeamPlayers, ourTeamMatches[i])
+		//btoo stands for "Blue team, orange opponents", which means that players that we check are in blue team,
+		//while opponents are in orange team. otbo stands for "Orange team, blue opponents", which is the opposite situation.
 		btoo, otbo := IsMatchSuitable(ourBlueCount, theirBlueCount, ourOrangeCount, theirOrangeCount)
 		if btoo {
 			ourTeamMatches[i].btoo = true

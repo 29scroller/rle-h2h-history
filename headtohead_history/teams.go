@@ -13,10 +13,10 @@ func FindTeamByName(teamName string) (Team, bool) {
 	rawData := UrlToByteSlice(url)
 	var teamInfo Player
 	UnmarshalObject(rawData, &teamInfo)
-	if len(teamInfo.Teams) == 0 {
+	if len(teamInfo.Teams) == 0 { //separate function
 		fmt.Println("Could not find any teams with that name, please try again")
 		return Team{}, false
-	} else if len(teamInfo.Teams) > 1 {
+	} else if len(teamInfo.Teams) > 1 { //separate function
 		fmt.Println("Found multiple teams??? Choose the right team and enter its number")
 		fmt.Print("Teams found: \n")
 		for i := 0; i < len(teamInfo.Teams); i++ {
@@ -35,7 +35,7 @@ func FindTeamByName(teamName string) (Team, bool) {
 			fmt.Println("You chose", teamInfo.Teams[res-1].Name)
 			return teamInfo.Teams[res-1], true
 		}
-	} else {
+	} else { //separate function
 		fmt.Printf("Found team %s; confirm it's the right team by typing 1 or type something else to search different team\n", teamInfo.Teams[0].Name)
 		var res int
 		fmt.Scanln(&res)
@@ -61,7 +61,7 @@ func FindActivePlayersByTeamID(teamId string) []Player {
 		}
 	}
 	for i := 0; i < len(activePlayers); i++ {
-		fmt.Print(activePlayers[i].Tag + "  ")
+		fmt.Print(activePlayers[i].Tag + " | ")
 	}
 	fmt.Println()
 	return activePlayers
