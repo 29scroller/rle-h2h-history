@@ -33,12 +33,12 @@ func ParseMatchInfo(matchId string) Match {
 // FindPlayersOfTeamInMatch searches for each player of a team in Blue and Orange sides of match.
 func CountPlayersOfTeamInMatch(team []Player, match Match) (blueCount, orangeCount uint8) {
 	for teamIndex := 0; teamIndex < len(team); teamIndex++ {
-		for blueIndex := 0; blueIndex < 3; blueIndex++ {
+		for blueIndex := 0; blueIndex < len(match.Blue.PlayerUp); blueIndex++ {
 			if match.Blue.PlayerUp[blueIndex].Player.Slug == team[teamIndex].Slug {
 				blueCount++
 			}
 		}
-		for orangeIndex := 0; orangeIndex < 3; orangeIndex++ {
+		for orangeIndex := 0; orangeIndex < len(match.Orange.PlayerUp); orangeIndex++ {
 			if match.Orange.PlayerUp[orangeIndex].Player.Slug == team[teamIndex].Slug {
 				orangeCount++
 			}
@@ -109,7 +109,7 @@ func DateCoefficient(date string) (kdate float64) {
 	case daysPassed < 365:
 		kdate = 0.25
 	case daysPassed < 730:
-		kdate = 0.1	
+		kdate = 0.1
 	case daysPassed >= 730:
 		kdate = 0.01
 	default:
